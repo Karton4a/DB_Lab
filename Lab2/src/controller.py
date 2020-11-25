@@ -1,7 +1,7 @@
 class controller():
     def __init__(self, model):
         self.__model = model
-        self.__query_data = ["article + theme","users + passport","comment + video + users"]
+        self.__query_data = ["video + category","users + passport","comment + video + users"]
 
     def set_view(self,view):
         self.__view = view
@@ -83,7 +83,7 @@ class controller():
         if res is not None:
             return res
 
-        column_arr = [x[0] for x in self.__model.get_column_types(data)]
+        column_arr = self.__model.get_column_names(data)
 
         return self.get_view_func("delete_row_menu",data,column_arr)
 
@@ -121,7 +121,10 @@ class controller():
         res_func = None
         try:
             int_data = int(data)
-            res_func = self.get_view_func("cond_query_menu",int_data)
+            if int_data <= len(self.__query_data) and int_data > 0:
+                res_func = self.get_view_func("cond_query_menu",int_data)
+            else:
+                self.get_view_func("print_message","uknown index {}".format(int_data),self.get_view_func("choose_query_menu",self.__query_data))
         except Exception as e:
             res_func = self.get_view_func("print_message",str(e),self.get_view_func("choose_query_menu",self.__query_data))
 
@@ -176,7 +179,7 @@ class controller():
             message = str(e) 
             self.__model.clear_transaction()
 
-        column_arr = [x[0] for x in self.__model.get_column_types(table)]
+        column_arr = self.__model.get_column_names(table)
 
         return self.get_view_func("print_message",message,self.get_view_func("delete_row_menu",table,column_arr)) 
 
@@ -227,17 +230,24 @@ class controller():
             return self.get_view_func("quit")
 
         query_func = None
+        column_arr = []
         if query_num == 1:
-            query_func = getattr(self.__model, "join_article_theme")
+            query_func = getattr(self.__model, "join_video_category")
+            column_arr = self.__model.get_column_names('video') + self.__model.get_column_names('category')
         elif query_num == 2:
             query_func = getattr(self.__model, "join_users_passport")
+            column_arr = self.__model.get_column_names('users') + self.__model.get_column_names('passport')
         elif query_num == 3:
             query_func = getattr(self.__model, "join_comment_video_users")
+            column_arr = self.__model.get_column_names('commentaries')
+            + self.__model.get_column_names('video') 
+            + self.__model.get_column_names('users')
 
         ret_func = None
         try:
             data = query_func(cond)
-            ret_func = self.get_view_func("print_table",("execution time {} ms".format(data[0]),data[1]),self.get_view_func("cond_query_menu",query_num))
+            ret_func = self.get_view_func("print_table",(column_arr,data[1]),
+                                          self.get_view_func("print_message","execution time {} ms".format(data[0]),self.get_view_func("cond_query_menu",query_num)))
         except Exception as e:
             ret_func = self.get_view_func("print_message",str(e),self.get_view_func("cond_query_menu",query_num))
             self.__model.clear_transaction()

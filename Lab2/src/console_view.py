@@ -1,5 +1,5 @@
 import msvcrt # windows only
-
+from prettytable import PrettyTable
 
 class console_view():
     def __init__(self, model,controller):
@@ -17,9 +17,12 @@ class console_view():
         return None
 
     def print_table(self,table,callback = None):
-        print(table[0])
+
+        t = PrettyTable(table[0])
         for row in table[1]:
-            print(row)
+            t.add_row(row)
+        print(t)
+
         if callback is not None:
             return callback
         return None
@@ -82,7 +85,7 @@ class console_view():
         print("QUERY MENU")
         print("choose query")
         for i in range(0,len(query_list)):
-            print(i+1,":",query_list[i])
+            print(i + 1,":",query_list[i])
         answer = input()
 
         return self.__controller.choose_query_menu(answer)

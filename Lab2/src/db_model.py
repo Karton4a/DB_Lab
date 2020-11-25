@@ -41,6 +41,13 @@ class db_model():
                                             ORDER BY table_schema, table_name""",(table_name,))
          return self.__cursor.fetchall()
 
+    def get_column_names(self,table_name):
+        self.__cursor.execute("""SELECT column_name
+                                            FROM information_schema.columns
+                                            WHERE table_schema = 'public' AND table_name = %s
+                                            ORDER BY table_schema, table_name""",(table_name,))
+        return [x[0] for x in self.__cursor.fetchall()]
+
     def get_table_names(self):
 
         if self.__table_names is None:
@@ -154,7 +161,7 @@ class db_model():
         t2 = time.time()
         return ((t2 - t1) * 1000, self.__cursor.fetchall())
 
-    def join_article_theme(self,condition = ""):
+    def join_video_category(self,condition = ""):
         return self.join_general("""SELECT * FROM video as v JOIN category as c ON v.video_category = c.category_id {} ORDER BY video_id ASC""",condition)
 
     def join_users_passport(self,condition = ""):
